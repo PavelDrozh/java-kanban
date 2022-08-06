@@ -1,5 +1,7 @@
 package ru.yandex.practicum.tasktracker;
 
+import java.util.List;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -7,13 +9,37 @@ public class Main {
     }
 
     private void startApplication() {
-        TaskManager manager = new TaskManager();
+        TaskManager manager = Managers.getDefault();
         addTasks(manager);
+        checkHistory(manager);
         printStatistics(manager);
         updateTasks(manager);
         printStatistics(manager);
         deleteTasks(manager);
         printStatistics(manager);
+    }
+
+    private void checkHistory(TaskManager manager) {
+        for (int i = 0; i <= 10; i++) {
+            manager.getTaskOrNull(0);
+        }
+        printHistory(manager);
+        manager.getTaskOrNull(3);
+        printHistory(manager);
+        manager.getTaskOrNull(2);
+        printHistory(manager);
+        manager.getTaskOrNull(5);
+        printHistory(manager);
+    }
+
+    private void printHistory(TaskManager manager) {
+        List<Task> history;
+        history = manager.getHistory();
+        System.out.print("История get-запросов: ");
+        for (Task task : history) {
+            System.out.printf("taskId = %s; ", task.getId());
+        }
+        System.out.println();
     }
 
     private void deleteTasks(TaskManager manager) {

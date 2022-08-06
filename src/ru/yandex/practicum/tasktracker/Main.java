@@ -35,6 +35,7 @@ public class Main {
     private void printHistory(TaskManager manager) {
         List<Task> history;
         history = manager.getHistory();
+
         System.out.print("История get-запросов: ");
         for (Task task : history) {
             System.out.printf("taskId = %s; ", task.getId());

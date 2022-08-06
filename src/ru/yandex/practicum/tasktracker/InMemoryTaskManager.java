@@ -44,24 +44,20 @@ public class InMemoryTaskManager implements TaskManager {
         task.setId(tasksId);
         tasksId++;
         if (task.getClass().equals(Subtask.class)) {
-            createSubtask((Subtask) task);
+            Subtask subtask = (Subtask) task;
+            int epicId = subtask.getEpic();
+            if (epics.containsKey(epicId)) {
+                Epic managersEpic = epics.get(epicId);
+                managersEpic.addSubtask(subtask);
+                subtasks.put(subtask.getId(), subtask);
+            } else {
+                tasksId--;
+            }
         } else if (task.getClass().equals(Epic.class)) {
-            crateEpic((Epic) task);
+            Epic epic = (Epic) task;
+            epics.put(epic.getId(), epic);
         } else {
             tasks.put(task.getId(), task);
-        }
-    }
-
-    private void crateEpic(Epic epic) {
-        epics.put(epic.getId(), epic);
-    }
-
-    private void createSubtask(Subtask subtask) {
-        int epicId = subtask.getEpic();
-        if (epics.containsKey(epicId)) {
-            Epic managersEpic = epics.get(epicId);
-            managersEpic.addSubtask(subtask);
-            subtasks.put(subtask.getId(), subtask);
         }
     }
 

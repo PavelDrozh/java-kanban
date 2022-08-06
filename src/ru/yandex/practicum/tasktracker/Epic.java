@@ -31,32 +31,26 @@ public class Epic extends Task {
         if (subtasks.isEmpty()) {
             resultStatus = TaskStatus.NEW;
         } else {
-            resultStatus = calculateStatus();
-        }
-        return resultStatus;
-    }
+            int newSubtasks = 0;
+            int inProgressSubtasks = 0;
+            int doneSubtasks = 0;
 
-    private TaskStatus calculateStatus() {
-        TaskStatus resultStatus;
-        int newSubtasks = 0;
-        int inProgressSubtasks = 0;
-        int doneSubtasks = 0;
-
-        for (Subtask subtask : subtasks.values()) {
-            if (subtask.getStatus().equals(TaskStatus.NEW)) {
-                newSubtasks++;
-            } else if (subtask.getStatus().equals(TaskStatus.IN_PROGRESS)) {
-                inProgressSubtasks++;
-            } else {
-                doneSubtasks++;
+            for (Subtask subtask : subtasks.values()) {
+                if (subtask.getStatus().equals(TaskStatus.NEW)) {
+                    newSubtasks++;
+                } else if (subtask.getStatus().equals(TaskStatus.IN_PROGRESS)) {
+                    inProgressSubtasks++;
+                } else {
+                    doneSubtasks++;
+                }
             }
-        }
-        if (newSubtasks != 0 && inProgressSubtasks == 0 && doneSubtasks == 0) {
-            resultStatus = TaskStatus.NEW;
-        } else if (newSubtasks == 0 && inProgressSubtasks == 0 && doneSubtasks != 0) {
-            resultStatus = TaskStatus.DONE;
-        } else {
-            resultStatus = TaskStatus.IN_PROGRESS;
+            if (newSubtasks != 0 && inProgressSubtasks == 0 && doneSubtasks == 0) {
+                resultStatus = TaskStatus.NEW;
+            } else if (newSubtasks == 0 && inProgressSubtasks == 0 && doneSubtasks != 0) {
+                resultStatus = TaskStatus.DONE;
+            } else {
+                resultStatus = TaskStatus.IN_PROGRESS;
+            }
         }
         return resultStatus;
     }

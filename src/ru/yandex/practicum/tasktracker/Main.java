@@ -17,6 +17,7 @@ public class Main {
         printStatistics(manager);
         deleteTasks(manager);
         printStatistics(manager);
+        printHistory(manager);
     }
 
     private void checkHistory(TaskManager manager) {
@@ -29,6 +30,24 @@ public class Main {
         manager.getTaskOrNull(2);
         printHistory(manager);
         manager.getTaskOrNull(5);
+        printHistory(manager);
+        manager.getTaskOrNull(1);
+        printHistory(manager);
+        manager.getTaskOrNull(2);
+        printHistory(manager);
+        manager.getTaskOrNull(4);
+        printHistory(manager);
+        manager.getTaskOrNull(3);
+        printHistory(manager);
+        manager.getTaskOrNull(6);
+        printHistory(manager);
+        manager.getTaskOrNull(7);
+        printHistory(manager);
+        manager.getTaskOrNull(6);
+        printHistory(manager);
+        manager.getTaskOrNull(4);
+        printHistory(manager);
+        manager.getTaskOrNull(0);
         printHistory(manager);
     }
 
@@ -46,7 +65,11 @@ public class Main {
     private void deleteTasks(TaskManager manager) {
         printDeleteResult(manager.deleteTaskOrNull(20));
         printDeleteResult(manager.deleteTaskOrNull(1));
-        printDeleteResult(manager.deleteTaskOrNull(5));
+        printHistory(manager);
+        printDeleteResult(manager.deleteTaskOrNull(2));
+        printHistory(manager);
+        printDeleteResult(manager.deleteTaskOrNull(0));
+        printHistory(manager);
     }
 
     private void printDeleteResult(Task deleted) {
@@ -61,7 +84,7 @@ public class Main {
         System.out.println(manager.getTasksList());
         System.out.println(manager.getEpicsList());
         System.out.println(manager.getSubtasksList());
-        System.out.println(manager.getTasksByEpicId(2));
+        System.out.println(manager.getTasksByEpicId(6));
     }
 
     private void updateTasks(TaskManager manager) {
@@ -100,12 +123,17 @@ public class Main {
         Subtask sub = new Subtask("Собрать вещи", "Сгруппировать по категориям вещи", epic.getId());
         Subtask subTwo = new Subtask("Упаковать вещи",
                 "Сгруппированные вещи разложить по соответствующим коробкам", epic.getId());
+        Subtask subThree = new Subtask("Загрузить коробки в машину",
+                "Перенести из старой квартиры коробки в машину", epic.getId());
         manager.createTask(sub);
         manager.createTask(subTwo);
+        manager.createTask(subThree);
         Epic epicTwo = new Epic("Дача", "Подготовка к строительству дома");
         manager.createTask(epicTwo);
-        Subtask subThree = new Subtask("Закупка материалов",
+        Subtask subFour = new Subtask("Закупка материалов",
                 "Заказать материалы на сайте с доставкой", epicTwo.getId());
-        manager.createTask(subThree);
+        manager.createTask(subFour);
+        Task taskThree = new Task("Установить сетку","Установить москитную сетку на окно");
+        manager.createTask(taskThree);
     }
 }

@@ -140,6 +140,7 @@ public class InMemoryTaskManager implements TaskManager {
         } else if (subtasks.containsKey(id)) {
             deleted = deleteSubtask(id);
         }
+        history.remove(id);
         return deleted;
     }
 
@@ -150,6 +151,7 @@ public class InMemoryTaskManager implements TaskManager {
 
         for (Integer subtaskId : subtasksId) {
             subtasks.remove(subtaskId);
+            history.remove(subtaskId);
         }
         deleted = epics.remove(id);
         return deleted;

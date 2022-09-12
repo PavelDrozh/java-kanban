@@ -1,4 +1,7 @@
-package ru.yandex.practicum.tasktracker;
+package ru.yandex.practicum.tasktracker.data;
+
+import ru.yandex.practicum.tasktracker.enums.TaskStatus;
+import ru.yandex.practicum.tasktracker.enums.TaskTypes;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +12,11 @@ public class Epic extends Task {
 
     public Epic(String name, String description) {
         super(name, description);
+        this.subtasks = new HashMap<>();
+    }
+
+    public Epic(int id, String name, String description, int status) {
+        super(id, name, description, status);
         this.subtasks = new HashMap<>();
     }
 
@@ -57,12 +65,7 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        return "Epic{" +
-                "id=" + super.getId() +
-                ", name='" + super.getName() + '\'' +
-                ", description='" + super.getDescription() + '\'' +
-                ", status=" + getStatus() +
-                ", subtasksId=" + subtasks.keySet() +
-                '}';
+        return String.format("%d,%s,%s,%s,%s,", super.getId(), TaskTypes.EPIC, super.getName(),
+                super.getStatus(), super.getDescription());
     }
 }

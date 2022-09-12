@@ -1,4 +1,8 @@
-package ru.yandex.practicum.tasktracker;
+package ru.yandex.practicum.tasktracker.managers;
+
+import ru.yandex.practicum.tasktracker.data.Epic;
+import ru.yandex.practicum.tasktracker.data.Subtask;
+import ru.yandex.practicum.tasktracker.data.Task;
 
 import java.util.Collection;
 import java.util.Map;
@@ -10,9 +14,10 @@ import java.util.Set;
 public class InMemoryTaskManager implements TaskManager {
 
     private static final int FIRST_INDEX = 0;
-    private final Map<Integer,Task> tasks;
-    private final Map<Integer,Epic> epics;
-    private final Map<Integer,Subtask> subtasks;
+    private static final int NEW_TASK = -1;
+    private final Map<Integer, Task> tasks;
+    private final Map<Integer, Epic> epics;
+    private final Map<Integer, Subtask> subtasks;
     private final HistoryManager history;
     private int tasksId;
 
@@ -40,9 +45,13 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void createTask(Task task) {
-        task.setId(tasksId);
-        tasksId++;
+    public Task createTask(Task task) {
+        if (task.getId() == NEW_TASK) {
+            tasksId++;
+            task.setId(tasksId);
+        } else {
+            tasksId = task.getId();
+        }
         if (task.getClass().equals(Subtask.class)) {
             Subtask subtask = (Subtask) task;
             int epicId = subtask.getEpic();
@@ -52,6 +61,7 @@ public class InMemoryTaskManager implements TaskManager {
                 subtasks.put(subtask.getId(), subtask);
             } else {
                 tasksId--;
+                return null;
             }
         } else if (task.getClass().equals(Epic.class)) {
             Epic epic = (Epic) task;
@@ -59,6 +69,7 @@ public class InMemoryTaskManager implements TaskManager {
         } else {
             tasks.put(task.getId(), task);
         }
+        return task;
     }
 
     @Override
@@ -181,5 +192,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Task> getHistory() {
         return history.getHistory();
+    }
+
+    public HistoryManager historyManager() {
+        return history;
     }
 }

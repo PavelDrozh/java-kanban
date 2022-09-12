@@ -1,15 +1,24 @@
 package ru.yandex.practicum.tasktracker;
 
+import ru.yandex.practicum.tasktracker.data.Epic;
+import ru.yandex.practicum.tasktracker.data.Subtask;
+import ru.yandex.practicum.tasktracker.data.Task;
+import ru.yandex.practicum.tasktracker.managers.Managers;
+import ru.yandex.practicum.tasktracker.managers.TaskManager;
+
+import java.io.File;
 import java.util.List;
 
 public class Main {
+
+    private static final String RESOURCE = "resources/taskstrack.csv";
 
     public static void main(String[] args) {
         new Main().startApplication();
     }
 
-    private void startApplication() {
-        TaskManager manager = Managers.getDefault();
+    public void startApplication() {
+        TaskManager manager = Managers.getDefaultFileBacked();
         addTasks(manager);
         checkHistory(manager);
         printStatistics(manager);
@@ -18,9 +27,32 @@ public class Main {
         deleteTasks(manager);
         printStatistics(manager);
         printHistory(manager);
+        File file = new File(RESOURCE);
+        TaskManager loadedManager = Managers.loadFromFile(file);
+        printStatistics(loadedManager);
+        printHistory(loadedManager);
+        addTasksInLoaded(loadedManager);
+        checkLoadedHistory(loadedManager);
+        printStatistics(loadedManager);
+        printHistory(loadedManager);
     }
 
-    private void checkHistory(TaskManager manager) {
+    private void addTasksInLoaded(TaskManager loadedManager) {
+        Task task = new Task("Поездка","Купить билеты на поезд");
+        Task taskTwo = new Task("Сдача проекта","реализовать файловый менеджер задач");
+        loadedManager.createTask(task);
+        loadedManager.createTask(taskTwo);
+    }
+
+    public void checkLoadedHistory(TaskManager manager) {
+        manager.getTaskOrNull(10);
+        manager.getTaskOrNull(12);
+        manager.getTaskOrNull(5);
+        manager.getTaskOrNull(6);
+    }
+
+
+    public void checkHistory(TaskManager manager) {
         for (int i = 0; i <= 10; i++) {
             manager.getTaskOrNull(0);
         }
@@ -51,7 +83,7 @@ public class Main {
         printHistory(manager);
     }
 
-    private void printHistory(TaskManager manager) {
+    public void printHistory(TaskManager manager) {
         List<Task> history;
         history = manager.getHistory();
 
@@ -62,7 +94,7 @@ public class Main {
         System.out.println();
     }
 
-    private void deleteTasks(TaskManager manager) {
+    public void deleteTasks(TaskManager manager) {
         printDeleteResult(manager.deleteTaskOrNull(20));
         printDeleteResult(manager.deleteTaskOrNull(1));
         printHistory(manager);
@@ -72,7 +104,7 @@ public class Main {
         printHistory(manager);
     }
 
-    private void printDeleteResult(Task deleted) {
+    public void printDeleteResult(Task deleted) {
         if (deleted != null) {
             System.out.println("Удаление прошло успешно");
         } else {
@@ -80,14 +112,14 @@ public class Main {
         }
     }
 
-    private void printStatistics(TaskManager manager) {
+    public void printStatistics(TaskManager manager) {
         System.out.println(manager.getTasksList());
         System.out.println(manager.getEpicsList());
         System.out.println(manager.getSubtasksList());
         System.out.println(manager.getTasksByEpicId(6));
     }
 
-    private void updateTasks(TaskManager manager) {
+    public void updateTasks(TaskManager manager) {
         Task task = new Task(0, "Уборка", "Помыть полы", 0);
         Task notCorrectTask = new Task(23, "Отдых", "Погулять в дождь", 0);
         Task taskTwo = new Task(1, "Программирование", "Написать программу по ТЗ 3 спринта", 1);
@@ -105,7 +137,7 @@ public class Main {
         printUpdateResult(manager.updateTask(subThree));
     }
 
-    private void printUpdateResult(boolean result) {
+    public void printUpdateResult(boolean result) {
         if (result) {
             System.out.println("Успешное обновление");
         } else {
@@ -113,7 +145,7 @@ public class Main {
         }
     }
 
-    private void addTasks(TaskManager manager) {
+    public void addTasks(TaskManager manager) {
         Task task = new Task("Уборка","Помыть полы");
         Task taskTwo = new Task("Программирование","Написать программу по ТЗ 3 спринта");
         manager.createTask(task);

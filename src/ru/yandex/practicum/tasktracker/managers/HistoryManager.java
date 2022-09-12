@@ -1,4 +1,6 @@
-package ru.yandex.practicum.tasktracker;
+package ru.yandex.practicum.tasktracker.managers;
+
+import ru.yandex.practicum.tasktracker.data.Task;
 
 import java.util.List;
 

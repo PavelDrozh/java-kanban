@@ -1,4 +1,8 @@
-package ru.yandex.practicum.tasktracker;
+package ru.yandex.practicum.tasktracker.managers;
+
+import ru.yandex.practicum.tasktracker.data.Epic;
+import ru.yandex.practicum.tasktracker.data.Subtask;
+import ru.yandex.practicum.tasktracker.data.Task;
 
 import java.util.List;
 
@@ -10,7 +14,7 @@ public interface TaskManager {
 
     List<Subtask> getSubtasksList();
 
-    void createTask(Task task);
+    Task createTask(Task task);
 
     boolean updateTask(Task task);
 

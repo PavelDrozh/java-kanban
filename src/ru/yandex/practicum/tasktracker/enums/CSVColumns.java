@@ -7,7 +7,9 @@ public enum CSVColumns {
     NAME(2),
     STATUS(3),
     DESCRIPTION(4),
-    EPIC(5);
+    START_TIME(5),
+    END_TIME(6),
+    EPIC(7);
 
     private final int id;
 

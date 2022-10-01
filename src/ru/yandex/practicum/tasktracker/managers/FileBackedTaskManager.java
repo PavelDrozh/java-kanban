@@ -12,11 +12,19 @@ import java.util.TreeMap;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
-    private Map<Integer, Task> allTasks;
+    private final Map<Integer, Task> allTasks;
 
     public FileBackedTaskManager() {
         super();
         allTasks = new TreeMap<>();
+    }
+
+    public void loadTask(Task task) {
+        if (super.tasksId < task.getId()) {
+            super.tasksId = task.getId() - 1;
+            task.setId(-1);
+        }
+        createTask(task);
     }
 
     @Override

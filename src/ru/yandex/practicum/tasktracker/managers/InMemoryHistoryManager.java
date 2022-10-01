@@ -86,6 +86,9 @@ public class InMemoryHistoryManager implements HistoryManager {
         } else if (idToDelete != tail) {
             next.setPrevTaskId(NO_ELEMENT);
             head = toDelete.getNextTaskId();
+        } else {
+            tail = NO_ELEMENT;
+            head = NO_ELEMENT;
         }
     }
 

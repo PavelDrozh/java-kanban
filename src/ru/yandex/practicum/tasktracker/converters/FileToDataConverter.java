@@ -12,12 +12,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class FileToDataConverter {
 
     private static final String COMMA_DELIMITER = ",";
+    private static final String MESSAGE = "Ошибка чтения задач из файла";
 
     private FileToDataConverter() { }
 
@@ -25,13 +28,17 @@ public final class FileToDataConverter {
         List<Task> tasks = new ArrayList<>();
         List<String> tasksLines = readTaskLines(file);
         for (String line : tasksLines) {
-            Task task = fromString(line);
-            tasks.add(task);
+            try {
+                Task task = fromString(line);
+                tasks.add(task);
+            } catch (Exception e) {
+                throw new ManagerSaveException(MESSAGE);
+            }
         }
         return tasks;
     }
 
-    public static List<String> readTaskLines(File file) {
+    private static List<String> readTaskLines(File file) {
         List<String> tasksLines = new ArrayList<>();
         try (FileReader reader = new FileReader(file);
             BufferedReader br = new BufferedReader(reader);) {
@@ -46,12 +53,12 @@ public final class FileToDataConverter {
                 tasksLines.add(line);
             }
         } catch (IOException e) {
-            throw new ManagerSaveException("Ошибка чтения задач из файла");
+            throw new ManagerSaveException(MESSAGE);
         }
         return tasksLines;
     }
 
-    public static Task fromString(String value) {
+    private static Task fromString(String value) {
         Task result;
         String[] values = value.split(COMMA_DELIMITER);
         int id = Integer.parseInt(values[CSVColumns.ID.getId()]);
@@ -65,13 +72,18 @@ public final class FileToDataConverter {
             }
         }
         String description = values[CSVColumns.DESCRIPTION.getId()];
+        LocalDateTime startTime = LocalDateTime.parse(values[CSVColumns.START_TIME.getId()]);
+        LocalDateTime endTime = LocalDateTime.parse(values[CSVColumns.END_TIME.getId()]);
+        Duration duration = Duration.between(startTime, endTime);
         if (type.equalsIgnoreCase(TaskTypes.SUBTASK.name())) {
             int epicID = Integer.parseInt(values[CSVColumns.EPIC.getId()]);
-            result = new Subtask(id, name, description, status, epicID);
+            result = new Subtask(id, name, description, status, epicID, startTime, duration);
         } else if (type.equalsIgnoreCase(TaskTypes.EPIC.name())) {
-            result = new Epic(id, name, description, status);
+            result = new Epic(id, name, description);
+        } else if (type.equalsIgnoreCase(TaskTypes.TASK.name())) {
+            result = new Task(id, name, description, status, startTime, duration);
         } else {
-            result = new Task(id, name, description, status);
+            throw new ManagerSaveException(MESSAGE);
         }
         return result;
     }
@@ -86,13 +98,13 @@ public final class FileToDataConverter {
                     history = historyFromString(br.readLine());
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new ManagerSaveException("Ошибка чтения истории из файла");
         }
         return history;
     }
 
-    public static List<Integer> historyFromString(String value) {
+    private static List<Integer> historyFromString(String value) {
         String[] values = value.split(COMMA_DELIMITER);
         List<Integer> history = new ArrayList<>();
         for (String element : values) {

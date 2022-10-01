@@ -29,7 +29,7 @@ public final class Managers {
         List<Integer> history = FileToDataConverter.getHistoryFromFile(file);
         FileBackedTaskManager tasksManager = new FileBackedTaskManager();
         for (Task task : tasks) {
-            tasksManager.createTask(task);
+            tasksManager.loadTask(task);
         }
         for (Integer id : history) {
             tasksManager.getTaskOrNull(id);

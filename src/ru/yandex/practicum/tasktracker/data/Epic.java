@@ -3,21 +3,28 @@ package ru.yandex.practicum.tasktracker.data;
 import ru.yandex.practicum.tasktracker.enums.TaskStatus;
 import ru.yandex.practicum.tasktracker.enums.TaskTypes;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class Epic extends Task {
 
-    private final HashMap<Integer, Subtask> subtasks;
+    private final Map<Integer, Subtask> subtasks;
 
     public Epic(String name, String description) {
         super(name, description);
         this.subtasks = new HashMap<>();
     }
 
-    public Epic(int id, String name, String description, int status) {
-        super(id, name, description, status);
+    public Epic(int id, String name, String description) {
+        super(id, name, description);
         this.subtasks = new HashMap<>();
+    }
+
+    public Epic(int id, String name, String description, Map<Integer, Subtask> subtasks) {
+        super(id, name, description);
+        this.subtasks = subtasks;
     }
 
     public Map<Integer, Subtask> getSubtasks() {
@@ -62,10 +69,60 @@ public class Epic extends Task {
         }
         return resultStatus;
     }
+    @Override
+    public LocalDateTime getStartTime() {
+        LocalDateTime dateTime;
+        if (subtasks.isEmpty()) {
+            dateTime = LocalDateTime.MIN;
+        } else {
+            dateTime = LocalDateTime.MAX;
+            for (Subtask subtask : subtasks.values()) {
+                if (subtask.getStartTime().isBefore(dateTime)) {
+                    dateTime = subtask.getStartTime();
+                }
+            }
+
+        }
+        return dateTime;
+    }
+
+    @Override
+    public LocalDateTime getEndTime() {
+        LocalDateTime dateTime;
+        if (subtasks.isEmpty()) {
+            dateTime = LocalDateTime.MIN;
+        } else {
+            dateTime = LocalDateTime.MIN;
+            for (Subtask subtask : subtasks.values()) {
+                if (subtask.getEndTime().isAfter(dateTime)) {
+                    dateTime = subtask.getEndTime();
+                }
+            }
+
+        }
+        return dateTime;
+    }
 
     @Override
     public String toString() {
-        return String.format("%d,%s,%s,%s,%s,", super.getId(), TaskTypes.EPIC, super.getName(),
-                super.getStatus(), super.getDescription());
+        return String.format("%d,%s,%s,%s,%s,%s,%s,", super.getId(), TaskTypes.EPIC, super.getName(),
+                this.getStatus(), super.getDescription(), this.getStartTime(), this.getEndTime());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Epic epic = (Epic) o;
+        return Objects.equals(this.getId(), epic.getId()) && Objects.equals(this.getName(), epic.getName())
+                && Objects.equals(this.getDescription(), epic.getDescription()) && this.getStatus() == epic.getStatus()
+                && Objects.equals(this.getStartTime(), epic.getStartTime())
+                && Objects.equals(this.getEndTime(), epic.getEndTime())
+                && Objects.equals(this.getSubtasks(), epic.getSubtasks());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), this.subtasks);
     }
 }

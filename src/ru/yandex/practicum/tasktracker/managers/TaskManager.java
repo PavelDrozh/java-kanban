@@ -28,7 +28,15 @@ public interface TaskManager {
 
     Task getTaskOrNull(int id);
 
+    Subtask getSubtaskOrNull(int id);
+
+    Epic getEpicOrNull(int id);
+
     Task deleteTaskOrNull(int id);
+
+    Subtask deleteSubtaskOrNull(int id);
+
+    Epic deleteEpicOrNull(int id);
 
     List<Subtask> getTasksByEpicId (int id);
 

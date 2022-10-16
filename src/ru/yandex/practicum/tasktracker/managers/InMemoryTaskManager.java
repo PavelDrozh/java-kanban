@@ -18,7 +18,7 @@ import java.util.LinkedHashMap;
 public class InMemoryTaskManager implements TaskManager {
 
     private static final int FIRST_INDEX = 0;
-    private static final int NEW_TASK = -1;
+    private static final int NEW_TASK = 0;
     private final Map<Integer, Task> tasks;
     private final Map<Integer, Epic> epics;
     private final Map<Integer, Subtask> subtasks;
@@ -151,7 +151,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
         if (chekSubtask) {
             for (Subtask sub: epic.getSubtasks().values()) {
-                updateSubtask(sub);
+                subtasks.put(sub.getId(), sub);
             }
             epics.put(epic.getId(), epic);
             return true;
@@ -205,10 +205,26 @@ public class InMemoryTaskManager implements TaskManager {
         Task result = null;
         if (tasks.containsKey(id)) {
             result = tasks.get(id);
-        } else if (epics.containsKey(id)) {
-            result = epics.get(id);
-        } else if (subtasks.containsKey(id)) {
+        }
+        if (result != null) history.add(result);
+        return result;
+    }
+
+    @Override
+    public Subtask getSubtaskOrNull(int id) {
+        Subtask result = null;
+        if (subtasks.containsKey(id)) {
             result = subtasks.get(id);
+        }
+        if (result != null) history.add(result);
+        return result;
+    }
+
+    @Override
+    public Epic getEpicOrNull(int id) {
+        Epic result = null;
+        if (epics.containsKey(id)) {
+            result = epics.get(id);
         }
         if (result != null) history.add(result);
         return result;
@@ -219,36 +235,39 @@ public class InMemoryTaskManager implements TaskManager {
         Task deleted = null;
         if (tasks.containsKey(id)) {
             deleted = tasks.remove(id);
-        } else if (epics.containsKey(id)) {
-            deleted = deleteEpic(id);
-        } else if (subtasks.containsKey(id)) {
-            deleted = deleteSubtask(id);
         }
         if (deleted != null) history.remove(id);
         return deleted;
     }
 
-    private Task deleteEpic(int id) {
-        Task deleted;
-        Epic epicToDelete = epics.get(id);
-        Set<Integer> subtasksId = epicToDelete.getSubtasks().keySet();
-
-        for (Integer subtaskId : subtasksId) {
-            subtasks.remove(subtaskId);
-            history.remove(subtaskId);
+    @Override
+    public Subtask deleteSubtaskOrNull(int id) {
+        Subtask deleted = null;
+        if (subtasks.containsKey(id)) {
+            deleted = subtasks.remove(id);
+            if (epics.containsKey(deleted.getEpic())) {
+                Epic epic = epics.get(deleted.getEpic());
+                epic.deleteSubtask(deleted.getId());
+            }
         }
-        deleted = epics.remove(id);
+        if (deleted != null) history.remove(id);
         return deleted;
     }
 
-    private Subtask deleteSubtask(int id) {
-        Subtask deleted = null;
-        for (Epic epic : epics.values()) {
-            if (epic.getSubtasks().containsKey(id)) {
-                subtasks.remove(id);
-                deleted = epic.getSubtasks().remove(id);
+    @Override
+    public Epic deleteEpicOrNull(int id) {
+        Epic deleted = null;
+        if (epics.containsKey(id)) {
+            Epic epicToDelete = epics.get(id);
+            Set<Integer> subtasksId = epicToDelete.getSubtasks().keySet();
+
+            for (Integer subtaskId : subtasksId) {
+                subtasks.remove(subtaskId);
+                history.remove(subtaskId);
             }
+            deleted = epics.remove(id);
         }
+        if (deleted != null) history.remove(id);
         return deleted;
     }
 

@@ -8,12 +8,12 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
+    private static final int NEW_TASK = 0;
 
-    private static final int NEW_TASK = -1;
+    private int id;
     private final String name;
     private final String description;
     private TaskStatus status;
-    private int id;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
@@ -31,6 +31,15 @@ public class Task {
         this.name = name;
         this.description = description;
         this.status = TaskStatus.NEW;
+        this.startTime = null;
+        this.endTime = null;
+    }
+
+    public Task(int id, String name, String description, int status) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        setStatus(status);
         this.startTime = null;
         this.endTime = null;
     }

@@ -4,6 +4,7 @@ import ru.yandex.practicum.tasktracker.converters.FileToDataConverter;
 import ru.yandex.practicum.tasktracker.data.Task;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
 
 public final class Managers {
@@ -12,8 +13,10 @@ public final class Managers {
 
     }
 
-    public static TaskManager getDefault() {
-        return new InMemoryTaskManager();
+    public static final URI MANAGERS_URI = URI.create("http://localhost:8078/");
+
+    public static HttpTaskManager getDefault() {
+        return new HttpTaskManager(MANAGERS_URI);
     }
 
     public static HistoryManager getDefaultHistory() {
@@ -33,7 +36,15 @@ public final class Managers {
         }
         for (Integer id : history) {
             tasksManager.getTaskOrNull(id);
+            tasksManager.getSubtaskOrNull(id);
+            tasksManager.getEpicOrNull(id);
         }
+        return tasksManager;
+    }
+
+    public static HttpTaskManager loadFromServer(URI uri) {
+        HttpTaskManager tasksManager = new HttpTaskManager(uri);
+        tasksManager.load();
         return tasksManager;
     }
 }

@@ -10,21 +10,19 @@ import java.util.Objects;
 
 public class Epic extends Task {
 
-    private final Map<Integer, Subtask> subtasks;
+    private final Map<Integer, Subtask> subtasks = new HashMap<>();
 
     public Epic(String name, String description) {
         super(name, description);
-        this.subtasks = new HashMap<>();
     }
 
     public Epic(int id, String name, String description) {
         super(id, name, description);
-        this.subtasks = new HashMap<>();
     }
 
     public Epic(int id, String name, String description, Map<Integer, Subtask> subtasks) {
         super(id, name, description);
-        this.subtasks = subtasks;
+        this.subtasks.putAll(subtasks);
     }
 
     public Map<Integer, Subtask> getSubtasks() {
@@ -37,6 +35,10 @@ public class Epic extends Task {
 
     public void deleteSubtasks() {
         subtasks.clear();
+    }
+
+    public void deleteSubtask(int id) {
+        subtasks.remove(id);
     }
 
     @Override
@@ -73,7 +75,7 @@ public class Epic extends Task {
     public LocalDateTime getStartTime() {
         LocalDateTime dateTime;
         if (subtasks.isEmpty()) {
-            dateTime = LocalDateTime.MIN;
+            dateTime = null;
         } else {
             dateTime = LocalDateTime.MAX;
             for (Subtask subtask : subtasks.values()) {
@@ -90,7 +92,7 @@ public class Epic extends Task {
     public LocalDateTime getEndTime() {
         LocalDateTime dateTime;
         if (subtasks.isEmpty()) {
-            dateTime = LocalDateTime.MIN;
+            dateTime = null;
         } else {
             dateTime = LocalDateTime.MIN;
             for (Subtask subtask : subtasks.values()) {

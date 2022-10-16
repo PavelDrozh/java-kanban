@@ -72,20 +72,39 @@ public final class FileToDataConverter {
             }
         }
         String description = values[CSVColumns.DESCRIPTION.getId()];
-        LocalDateTime startTime = LocalDateTime.parse(values[CSVColumns.START_TIME.getId()]);
-        LocalDateTime endTime = LocalDateTime.parse(values[CSVColumns.END_TIME.getId()]);
-        Duration duration = Duration.between(startTime, endTime);
+        LocalDateTime startTime = getTime(values[CSVColumns.START_TIME.getId()]);
+        LocalDateTime endTime = getTime(values[CSVColumns.END_TIME.getId()]);
+        Duration duration = null;
+        if (startTime != null && endTime != null) {
+            duration = Duration.between(startTime, endTime);
+        }
         if (type.equalsIgnoreCase(TaskTypes.SUBTASK.name())) {
             int epicID = Integer.parseInt(values[CSVColumns.EPIC.getId()]);
-            result = new Subtask(id, name, description, status, epicID, startTime, duration);
+            if (startTime != null && duration != null) {
+                result = new Subtask(id, name, description, status, epicID, startTime, duration);
+            } else {
+                result = new Subtask(id, name, description, status, epicID);
+            }
         } else if (type.equalsIgnoreCase(TaskTypes.EPIC.name())) {
             result = new Epic(id, name, description);
         } else if (type.equalsIgnoreCase(TaskTypes.TASK.name())) {
-            result = new Task(id, name, description, status, startTime, duration);
+            if (startTime != null && duration != null) {
+                result = new Task(id, name, description, status, startTime, duration);
+            } else {
+                result = new Task(id, name, description, status);
+            }
         } else {
             throw new ManagerSaveException(MESSAGE);
         }
         return result;
+    }
+
+    private static LocalDateTime getTime(String time) {
+        if (time.equals("null")) {
+            return null;
+        } else {
+            return LocalDateTime.parse(time);
+        }
     }
 
     public static List<Integer> getHistoryFromFile(File file) {

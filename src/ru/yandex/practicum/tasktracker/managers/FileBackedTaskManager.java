@@ -22,7 +22,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public void loadTask(Task task) {
         if (super.tasksId < task.getId()) {
             super.tasksId = task.getId() - 1;
-            task.setId(-1);
+            task.setId(0);
         }
         createTask(task);
     }
@@ -37,7 +37,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return created;
     }
 
-    private void save() {
+    protected void save() {
         DataToFileConverter.writeFile(new ArrayList<>(allTasks.values()), super.historyManager());
     }
 
@@ -46,6 +46,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         boolean result = super.updateTask(task);
         if (result) {
             allTasks.put(task.getId(), task);
+            if (task.getClass().equals(Epic.class)) {
+                Epic epic = (Epic) task;
+                for (Subtask sub: epic.getSubtasks().values()) {
+                    allTasks.put(sub.getId(), sub);
+                }
+            }
             save();
         }
         return result;
@@ -102,8 +108,46 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
+    public Subtask getSubtaskOrNull(int id) {
+        Subtask toGet = super.getSubtaskOrNull(id);
+        if (toGet != null) {
+            save();
+        }
+        return toGet;
+    }
+
+    @Override
+    public Epic getEpicOrNull(int id) {
+        Epic toGet = super.getEpicOrNull(id);
+        if (toGet != null) {
+            save();
+        }
+        return toGet;
+    }
+
+    @Override
     public Task deleteTaskOrNull(int id) {
         Task toDelete = super.deleteTaskOrNull(id);
+        if (toDelete != null) {
+            allTasks.remove(toDelete.getId());
+            save();
+        }
+        return toDelete;
+    }
+
+    @Override
+    public Subtask deleteSubtaskOrNull(int id) {
+        Subtask toDelete = super.deleteSubtaskOrNull(id);
+        if (toDelete != null) {
+            allTasks.remove(toDelete.getId());
+            save();
+        }
+        return toDelete;
+    }
+
+    @Override
+    public Epic deleteEpicOrNull(int id) {
+        Epic toDelete = super.deleteEpicOrNull(id);
         if (toDelete != null) {
             allTasks.remove(toDelete.getId());
             save();

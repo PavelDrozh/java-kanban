@@ -7,6 +7,7 @@ import ru.yandex.practicum.tasktracker.data.Epic;
 import ru.yandex.practicum.tasktracker.data.Subtask;
 import ru.yandex.practicum.tasktracker.data.Task;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -18,30 +19,30 @@ import static org.junit.jupiter.api.Assertions.*;
 public abstract class TaskManagerTest<T extends TaskManager> {
 
     protected T manager;
-    private final Task task1 = new Task("Task1", "Description1",
+    protected final Task task1 = new Task("Task1", "Description1",
             LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));
-    private final Task epic1 = new Epic("Epic1", "Description3");
-    private final Task subtask1 = new Subtask("SubTask1", "Description4",2,
+    protected final Task epic1 = new Epic("Epic1", "Description3");
+    protected final Task subtask1 = new Subtask("SubTask1", "Description4",2,
             LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
-    private final Task epic2 = new Epic("Epic2", "Description5");
-    private final Task subtask2 = new Subtask("SubTask1", "Description4",4,
+    protected final Task epic2 = new Epic("Epic2", "Description5");
+    protected final Task subtask2 = new Subtask("SubTask1", "Description4",4,
             LocalDateTime.of(2022, 10, 3, 15, 52), Duration.ofMinutes(30));
-    private final Task task2 = new Task("Task2", "Description2",
+    protected final Task task2 = new Task("Task2", "Description2",
             LocalDateTime.of(2022, 10, 4, 15, 52), Duration.ofMinutes(45));
 
-    private final Task incorrectTask1 = new Task(-20, "Task1", "Description1",
+    protected final Task incorrectTask1 = new Task(-20, "Task1", "Description1",
             LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));
-    private final Task incorrectTask2 = new Task(12, "Task2", "Description2",
+    protected final Task incorrectTask2 = new Task(12, "Task2", "Description2",
             LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));
-    private final Task incorrectEpic1 = new Epic(73,"Epic1", "Description3");
-    private final Task incorrectSubtask1 = new Subtask("SubTask1", "Description4",5,
+    protected final Task incorrectEpic1 = new Epic(73,"Epic1", "Description3");
+    protected final Task incorrectSubtask1 = new Subtask("SubTask1", "Description4",5,
             LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));
-    private final Task incorrectEpic2 = new Epic(-5,"Epic2", "Description5");
-    private final Task incorrectSubtask2 = new Subtask("SubTask1", "Description4",8,
+    protected final Task incorrectEpic2 = new Epic(-5,"Epic2", "Description5");
+    protected final Task incorrectSubtask2 = new Subtask("SubTask1", "Description4",8,
             LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));
 
     @BeforeEach
-    abstract void createManager();
+    abstract void createManager() throws IOException;
 
     @Test
     void mustReturnNellWhenCreateTaskNull() {
@@ -64,7 +65,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         assertEquals(expectedSub,subtask);
     }
 
-    private void normalFilling() {
+    protected void normalFilling() {
         manager.createTask(task1);
         manager.createTask(epic1);
         manager.createTask(subtask1);
@@ -73,7 +74,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         manager.createTask(task2);
     }
 
-    private void incorrectFilling() {
+    protected void incorrectFilling() {
         manager.createTask(incorrectTask1);
         manager.createTask(incorrectTask2);
         manager.createTask(incorrectEpic1);
@@ -197,7 +198,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void mustDeleteAllTasks() {
+    void mustDeleteAllTasks() throws IOException, InterruptedException {
         normalFilling();
         manager.deleteAllTasks();
         assertTrue(manager.getTasksList().isEmpty());
@@ -239,6 +240,8 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void mustReturnNullWhenGetFromEmptyTasks() {
         assertNull(manager.getTaskOrNull(1));
+        assertNull(manager.getSubtaskOrNull(1));
+        assertNull(manager.getEpicOrNull(1));
     }
 
     @Test
@@ -249,6 +252,21 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         Task expectedTask = new Task(1,"Task1", "Description1",
                 LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));
         assertEquals(expectedTask,takenTask);
+
+        Subtask takenSubtask = manager.getSubtaskOrNull(3);
+        assertNotNull(takenSubtask);
+        Subtask expectedSubtask = new Subtask(3,"SubTask1", "Description4", -1,2,
+                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
+        assertEquals(expectedSubtask,takenSubtask);
+
+        Epic takenEpic = manager.getEpicOrNull(2);
+        assertNotNull(takenEpic);
+        Map<Integer, Subtask> subtasksMap = new HashMap<>();
+        Subtask subtask = new Subtask(3,"SubTask1", "Description4", -1,2,
+                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
+        subtasksMap.put(subtask.getId(), subtask);
+        Epic expectedEpic = new Epic(2,"Epic1", "Description3", subtasksMap);
+        assertEquals(expectedEpic,takenEpic);
     }
 
     @Test
@@ -256,6 +274,10 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         normalFilling();
         assertNull(manager.getTaskOrNull(-3));
         assertNull(manager.getTaskOrNull(25));
+        assertNull(manager.getSubtaskOrNull(-3));
+        assertNull(manager.getSubtaskOrNull(25));
+        assertNull(manager.getEpicOrNull(-3));
+        assertNull(manager.getEpicOrNull(25));
     }
 
     @Test
@@ -276,7 +298,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void mustReturnTaskWhenDeleteCorrectEpic() {
         normalFilling();
-        Task deletedTask = manager.deleteTaskOrNull(2);
+        Epic deletedTask = manager.deleteEpicOrNull(2);
         assertNotNull(deletedTask);
         Map<Integer, Subtask> subtasksMap = new HashMap<>();
         Subtask subtask = new Subtask(3,"SubTask1", "Description4", -1,2,
@@ -289,13 +311,13 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void mustReturnTaskWhenDeleteCorrectSubtask() {
         normalFilling();
-        Task deletedTask = manager.deleteTaskOrNull(3);
+        Task deletedTask = manager.deleteSubtaskOrNull(3);
         assertNotNull(deletedTask);
         Subtask expectedSubtask = new Subtask(3, "SubTask1", "Description4",-1,2,
                 LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
         assertEquals(expectedSubtask,deletedTask);
         int epicId = expectedSubtask.getEpic();
-        Epic epic = (Epic) manager.getTaskOrNull(epicId);
+        Epic epic = manager.getEpicOrNull(epicId);
         assertTrue(epic.getSubtasks().isEmpty());
     }
     @Test
@@ -305,6 +327,14 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         assertNull(deletedTask);
         Task deletedTask2 = manager.deleteTaskOrNull(11);
         assertNull(deletedTask2);
+        Subtask deletedSubtask = manager.deleteSubtaskOrNull(-1);
+        assertNull(deletedSubtask);
+        Subtask deletedSubtask2 = manager.deleteSubtaskOrNull(-1);
+        assertNull(deletedSubtask2);
+        Epic deletedEpic = manager.deleteEpicOrNull(-1);
+        assertNull(deletedEpic);
+        Epic deletedEpic2 = manager.deleteEpicOrNull(11);
+        assertNull(deletedEpic2);
     }
 
     @Test
@@ -339,7 +369,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     void mustReturnTasksListWhenGetHistoryFromNormalManager() {
         normalFilling();
         manager.getTaskOrNull(1);
-        manager.getTaskOrNull(3);
+        manager.getSubtaskOrNull(3);
         List<Task> expectedHistory = List.of(new Task(1,"Task1", "Description1",
                 LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15)),
         new Subtask(3,"SubTask1", "Description4",-1,2,

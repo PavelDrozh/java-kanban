@@ -267,20 +267,14 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
                 .build();
         client.send(subtaskCreateRequest, HttpResponse.BodyHandlers.ofString());
 
-        Task newTask = new Task(1,"NewTask1", "Description1",
-                LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));;
         HttpRequest updateTaskRequest = HttpRequest
                 .newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/task"))
-                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(newTask)))
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(newTask1)))
                 .build();
         client.send(updateTaskRequest, HttpResponse.BodyHandlers.ofString());
 
-        Map<Integer, Subtask> subtasksMap = new HashMap<>();
-        Subtask newSubtask = new Subtask(3,"NewSubTask1", "Description4", -1,2,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
-        subtasksMap.put(newSubtask.getId(), newSubtask);
-        Epic newEpic = new Epic(2,"NewEpic1", "Description3", subtasksMap);
+        Epic newEpic = getNewEpic(newSubtask1);
         HttpRequest updateEpicRequest = HttpRequest
                 .newBuilder()
                 .uri(URI.create("http://localhost:8080/tasks/epic"))
@@ -322,9 +316,9 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
         assertEquals(1, tasksResponse.size());
         assertEquals(1, epicsResponse.size());
         assertEquals(1, subtasksResponse.size());
-        assertEquals(newTask, tasksResponse.get(0));
+        assertEquals(newTask1, tasksResponse.get(0));
         assertEquals(newEpic, epicsResponse.get(0));
-        assertEquals(newSubtask, subtasksResponse.get(0));
+        assertEquals(newSubtask1, subtasksResponse.get(0));
 
     }
     @Test
@@ -448,8 +442,7 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
                 client.send(getSubtasksRequest, HttpResponse.BodyHandlers.ofString()).body(),
                 new TypeToken<List<Subtask>>() {}.getType()
         );
-        Subtask expectedSubtask = new Subtask(3,"SubTask1", "Description4", -1,2,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
-        assertEquals(expectedSubtask, subtasksResponse.get(0));
+
+        assertEquals(expectedSubtask1, subtasksResponse.get(0));
     }
 }

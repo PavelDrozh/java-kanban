@@ -25,7 +25,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     protected final Task subtask1 = new Subtask("SubTask1", "Description4",2,
             LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
     protected final Task epic2 = new Epic("Epic2", "Description5");
-    protected final Task subtask2 = new Subtask("SubTask1", "Description4",4,
+    protected final Task subtask2 = new Subtask("SubTask2", "Description4",4,
             LocalDateTime.of(2022, 10, 3, 15, 52), Duration.ofMinutes(30));
     protected final Task task2 = new Task("Task2", "Description2",
             LocalDateTime.of(2022, 10, 4, 15, 52), Duration.ofMinutes(45));
@@ -41,6 +41,30 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     protected final Task incorrectSubtask2 = new Subtask("SubTask1", "Description4",8,
             LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));
 
+    protected final Task expectedTask1 = new Task(1,"Task1", "Description1",
+            LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));
+    protected final Task expectedEmptyEpic1 = new Epic(2, "Epic1", "Description3");
+    protected final Subtask expectedSubtask1 = new Subtask(3,"SubTask1", "Description4",-1,2,
+            LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
+    protected final Task expectedSubtask2 = new Subtask(5,"SubTask2", "Description4",-1,4,
+            LocalDateTime.of(2022, 10, 3, 15, 52), Duration.ofMinutes(30));
+    protected final Task expectedTask2 = new Task(6,"Task2", "Description2",
+            LocalDateTime.of(2022, 10, 4, 15, 52), Duration.ofMinutes(45));
+
+    protected final Task newTask1 = new Task(1,"Task1", "Description1", 1,
+            LocalDateTime.of(2022, 10, 5, 15, 52), Duration.ofMinutes(25));
+    protected final Subtask newSubtask1 = new Subtask(3,"SubTask1", "Description4", 1,2,
+            LocalDateTime.of(2022, 10, 10, 15, 52), Duration.ofMinutes(25));
+    protected final Subtask newSubtask2 = new Subtask(5,"SubTask1", "Description4", 1,4,
+            LocalDateTime.of(2022, 10, 12, 15, 52), Duration.ofMinutes(25));
+
+    protected final Task newIncorrectTask1 = new Task(-10,"INCORRECT Task", "Description1", 1,
+            LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
+    protected final Subtask newIncorrectSubtask1 = new Subtask(8,"Incorrect SubTask", "Description4", 1,2,
+            LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
+    protected final Subtask newIncorrectSubtask2 = new Subtask(5,"SubTask1", "Description4", 1,7,
+            LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
+
     @BeforeEach
     abstract void createManager() throws IOException;
 
@@ -53,16 +77,11 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void mustReturnTaskWhenCreateTaskCorrect() {
         Task task = manager.createTask(task1);
-        Task expectedTask = new Task(1,"Task1", "Description1",
-                LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));
-        assertEquals(expectedTask,task);
+        assertEquals(expectedTask1,task);
         Task epic = manager.createTask(epic1);
-        Task expectedEpic = new Epic(2, "Epic1", "Description3");
-        assertEquals(expectedEpic,epic);
+        assertEquals(expectedEmptyEpic1,epic);
         Task subtask = manager.createTask(subtask1);
-        Task expectedSub = new Subtask(3,"SubTask1", "Description4",-1,2,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
-        assertEquals(expectedSub,subtask);
+        assertEquals(expectedSubtask1,subtask);
     }
 
     protected void normalFilling() {
@@ -160,40 +179,36 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void mustReturnTrueWhenUpdateTask() {
         normalFilling();
-        Task newTask = new Task(1,"Task1", "Description1", 1,
-                LocalDateTime.of(2022, 10, 5, 15, 52), Duration.ofMinutes(25));
-        boolean taskUpdate = manager.updateTask(newTask);
+        boolean taskUpdate = manager.updateTask(newTask1);
         assertTrue(taskUpdate);
-        Map<Integer, Subtask> subtasksMap = new HashMap<>();
-        Subtask subtask = new Subtask(3,"SubTask1", "Description4", 1,2,
-                LocalDateTime.of(2022, 10, 10, 15, 52), Duration.ofMinutes(25));
-        subtasksMap.put(subtask.getId(), subtask);
-        Task newEpic = new Epic(2,"Task1", "Description1", subtasksMap);
+
+        Task newEpic = getNewEpic(newSubtask1);
         boolean epicUpdate = manager.updateTask(newEpic);
         assertTrue(epicUpdate);
-        Subtask subtaskForUpdate = new Subtask(5,"SubTask1", "Description4", 1,4,
-                LocalDateTime.of(2022, 10, 12, 15, 52), Duration.ofMinutes(25));
-        boolean subtaskUpdate = manager.updateTask(subtaskForUpdate);
+
+        boolean subtaskUpdate = manager.updateTask(newSubtask2);
         assertTrue(subtaskUpdate);
+    }
+
+    protected Epic getNewEpic(Subtask subtask) {
+        Map<Integer, Subtask> subtasksMap = new HashMap<>();
+        subtasksMap.put(subtask.getId(), subtask);
+        return new Epic(2,"Epic1", "Description3", subtasksMap);
     }
 
     @Test
     void mustReturnFalseWhenUpdateIncorrectTask() {
         normalFilling();
-        Task newTask = new Task(-10,"INCORRECT Task", "Description1", 1,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
-        boolean taskUpdate = manager.updateTask(newTask);
+
+        boolean taskUpdate = manager.updateTask(newIncorrectTask1);
         assertFalse(taskUpdate);
-        Map<Integer, Subtask> subtasksMap = new HashMap<>();
-        Subtask subtask = new Subtask(8,"Incorrect SubTask", "Description4", 1,2,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
-        subtasksMap.put(subtask.getId(), subtask);
-        Task newEpic = new Epic(2,"Task1", "Description1", subtasksMap);
+
+        Task newEpic = getNewEpic(newIncorrectSubtask1);
         boolean epicUpdate = manager.updateTask(newEpic);
         assertFalse(epicUpdate);
-        Subtask subtaskForUpdate = new Subtask(5,"SubTask1", "Description4", 1,7,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
-        boolean subtaskUpdate = manager.updateTask(subtaskForUpdate);
+
+
+        boolean subtaskUpdate = manager.updateTask(newIncorrectSubtask2);
         assertFalse(subtaskUpdate);
     }
 
@@ -247,25 +262,18 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void mustReturnTaskWhenGetCorrectTask() {
         normalFilling();
+
         Task takenTask = manager.getTaskOrNull(1);
         assertNotNull(takenTask);
-        Task expectedTask = new Task(1,"Task1", "Description1",
-                LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));
-        assertEquals(expectedTask,takenTask);
+        assertEquals(expectedTask1,takenTask);
 
         Subtask takenSubtask = manager.getSubtaskOrNull(3);
         assertNotNull(takenSubtask);
-        Subtask expectedSubtask = new Subtask(3,"SubTask1", "Description4", -1,2,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
-        assertEquals(expectedSubtask,takenSubtask);
+        assertEquals(expectedSubtask1,takenSubtask);
 
         Epic takenEpic = manager.getEpicOrNull(2);
         assertNotNull(takenEpic);
-        Map<Integer, Subtask> subtasksMap = new HashMap<>();
-        Subtask subtask = new Subtask(3,"SubTask1", "Description4", -1,2,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
-        subtasksMap.put(subtask.getId(), subtask);
-        Epic expectedEpic = new Epic(2,"Epic1", "Description3", subtasksMap);
+        Epic expectedEpic = getNewEpic(expectedSubtask1);
         assertEquals(expectedEpic,takenEpic);
     }
 
@@ -290,21 +298,16 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         normalFilling();
         Task deletedTask = manager.deleteTaskOrNull(1);
         assertNotNull(deletedTask);
-        Task expectedTask = new Task(1,"Task1", "Description1",
-                LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));
-        assertEquals(expectedTask,deletedTask);
+        assertEquals(expectedTask1,deletedTask);
     }
 
     @Test
     void mustReturnTaskWhenDeleteCorrectEpic() {
         normalFilling();
+
         Epic deletedTask = manager.deleteEpicOrNull(2);
         assertNotNull(deletedTask);
-        Map<Integer, Subtask> subtasksMap = new HashMap<>();
-        Subtask subtask = new Subtask(3,"SubTask1", "Description4", -1,2,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
-        subtasksMap.put(subtask.getId(), subtask);
-        Epic expectedEpic = new Epic(2,"Epic1", "Description3", subtasksMap);
+        Epic expectedEpic = getNewEpic(expectedSubtask1);
         assertEquals(expectedEpic,deletedTask);
     }
 
@@ -313,10 +316,9 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         normalFilling();
         Task deletedTask = manager.deleteSubtaskOrNull(3);
         assertNotNull(deletedTask);
-        Subtask expectedSubtask = new Subtask(3, "SubTask1", "Description4",-1,2,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
-        assertEquals(expectedSubtask,deletedTask);
-        int epicId = expectedSubtask.getEpic();
+        assertEquals(expectedSubtask1,deletedTask);
+
+        int epicId = expectedSubtask1.getEpic();
         Epic epic = manager.getEpicOrNull(epicId);
         assertTrue(epic.getSubtasks().isEmpty());
     }
@@ -347,8 +349,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     void mustReturnSubtaskListWhenGetTasksByCorrectEpicId() {
         normalFilling();
         List<Subtask> subs = manager.getTasksByEpicId(2);
-        List<Subtask> expected = List.of(new Subtask(3,"SubTask1", "Description4",-1,2,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25)));
+        List<Subtask> expected = List.of(expectedSubtask1);
         assertFalse(subs.isEmpty());
         assertIterableEquals(expected, subs);
     }
@@ -370,10 +371,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         normalFilling();
         manager.getTaskOrNull(1);
         manager.getSubtaskOrNull(3);
-        List<Task> expectedHistory = List.of(new Task(1,"Task1", "Description1",
-                LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15)),
-        new Subtask(3,"SubTask1", "Description4",-1,2,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25)));
+        List<Task> expectedHistory = List.of(expectedTask1,expectedSubtask1);
         List<Task> history = manager.getHistory();
         assertFalse(history.isEmpty());
         assertIterableEquals(expectedHistory, history);
@@ -395,14 +393,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void mustReturnPriorityListWhenGetPriorityFromNormalManager() {
-        List<Task> expected = List.of(new Task(1,"Task1", "Description1",
-                        LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15)),
-                new Subtask(3,"SubTask1", "Description4",-1,2,
-                        LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25)),
-                new Subtask(5,"SubTask1", "Description4",-1,4,
-                        LocalDateTime.of(2022, 10, 3, 15, 52), Duration.ofMinutes(30)),
-                new Task(6,"Task2", "Description2",
-                        LocalDateTime.of(2022, 10, 4, 15, 52), Duration.ofMinutes(45)));
+        List<Task> expected = List.of(expectedTask1, expectedSubtask1, expectedSubtask2, expectedTask2);
         normalFilling();
         List<Task> result = manager.getPrioritizedTasks();
         assertFalse(result.isEmpty());
@@ -411,15 +402,9 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void mustReturnPriorityListWhenGetPriorityFromNormalManagerWithNoStartTime() {
-        List<Task> expected = List.of(new Task(1,"Task1", "Description1",
-                        LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15)),
-                new Subtask(3,"SubTask1", "Description4",-1,2,
-                        LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25)),
-                new Subtask(5,"SubTask1", "Description4",-1,4,
-                        LocalDateTime.of(2022, 10, 3, 15, 52), Duration.ofMinutes(30)),
-                new Task(6,"Task2", "Description2",
-                        LocalDateTime.of(2022, 10, 4, 15, 52), Duration.ofMinutes(45)),
-                new Task(7,"Task3", "Description7"));
+
+        List<Task> expected = List.of(expectedTask1, expectedSubtask1, expectedSubtask2, expectedTask2,
+                                new Task(7,"Task3", "Description7"));
         normalFilling();
         manager.createTask(new Task("Task3", "Description7"));
         List<Task> result = manager.getPrioritizedTasks();

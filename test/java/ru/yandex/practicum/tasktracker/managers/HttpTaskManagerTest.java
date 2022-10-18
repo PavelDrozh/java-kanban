@@ -24,7 +24,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
 
-    private static final String BASE_URL = "http://localhost:8080/";
+    private static final String LOCALHOST = "http://localhost:";
+    private static final String PORT = "8080/";
+    private static final String BASE_URL = LOCALHOST + PORT;
     public static final String PRIORITY_TASKS_PATH = "tasks";
     private static final String TASKS_PATH = PRIORITY_TASKS_PATH + "/task";
     private static final String SUBTASKS_PATH = PRIORITY_TASKS_PATH + "/subtask";
@@ -88,7 +90,7 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
 
     @Test
     void getHttpFromNotExistingServer() {
-        ManagerSaveException ex = getManagerSaveException("http://localhost:8070/");
+        ManagerSaveException ex = getManagerSaveException(LOCALHOST + "8070/");
         assertEquals("Ошибка при подключении к KVServer", ex.getMessage());
     }
 

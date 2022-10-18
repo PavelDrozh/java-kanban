@@ -17,8 +17,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,9 +24,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
 
+    private static final String BASE_URL = "http://localhost:8080/";
+    public static final String PRIORITY_TASKS_PATH = "tasks";
+    private static final String TASKS_PATH = PRIORITY_TASKS_PATH + "/task";
+    private static final String SUBTASKS_PATH = PRIORITY_TASKS_PATH + "/subtask";
+    private static final String EPICS_PATH = PRIORITY_TASKS_PATH + "/epic";
+    public static final String TASKS_HISTORY_PATH = PRIORITY_TASKS_PATH + "/history";
+    public static final String SUBTASKS_OF_EPIC_PATH = SUBTASKS_PATH + "/epic";
+    private static final String ID_PARAMETER = "/?id=";
+
     private KVServer kvServer;
     private HttpTaskServer taskServer;
     private final Gson gson = new Gson();
+
 
     @BeforeEach
     void createManager() throws IOException {
@@ -96,38 +104,38 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
 
         HttpRequest taskCreateRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/task"))
+                .uri(URI.create(BASE_URL + TASKS_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(task1)))
                 .build();
         client.send(taskCreateRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest epicCreateRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/epic"))
+                .uri(URI.create(BASE_URL + EPICS_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(epic1)))
                 .build();
         client.send(epicCreateRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest subtaskCreateRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/subtask"))
+                .uri(URI.create(BASE_URL + SUBTASKS_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(subtask1)))
                 .build();
         client.send(subtaskCreateRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest getTasksRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/task/?id=1"))
+                .uri(URI.create(BASE_URL + TASKS_PATH + ID_PARAMETER + 1))
                 .GET()
                 .build();
         HttpRequest getEpicsRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/epic/?id=2"))
+                .uri(URI.create(BASE_URL + EPICS_PATH + ID_PARAMETER + 2))
                 .GET()
                 .build();
         HttpRequest getSubtasksRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/subtask/?id=3"))
+                .uri(URI.create(BASE_URL + SUBTASKS_PATH + ID_PARAMETER + 3))
                 .GET()
                 .build();
 
@@ -146,17 +154,11 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
                 Subtask.class
         );
 
-        Map<Integer, Subtask> subtasksMap = new HashMap<>();
-        Subtask expectedSubtask = new Subtask(3,"SubTask1", "Description4", -1,2,
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(25));
-        subtasksMap.put(expectedSubtask.getId(), expectedSubtask);
-        Epic expectedEpic = new Epic(2,"Epic1", "Description3", subtasksMap);
-        Task expectedTask = new Task(1,"Task1", "Description1",
-                LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15));
+        Epic expectedEpic = getNewEpic(expectedSubtask1);
 
-        assertEquals(expectedTask, tasksResponse);
+        assertEquals(expectedTask1, tasksResponse);
         assertEquals(expectedEpic, epicsResponse);
-        assertEquals(expectedSubtask, subtasksResponse);
+        assertEquals(expectedSubtask1, subtasksResponse);
     }
 
     @Test
@@ -165,42 +167,42 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
 
         HttpRequest taskCreateRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/task"))
+                .uri(URI.create(BASE_URL + TASKS_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(task1)))
                 .build();
         client.send(taskCreateRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest epicCreateRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/epic"))
+                .uri(URI.create(BASE_URL + EPICS_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(epic1)))
                 .build();
         client.send(epicCreateRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest subtaskCreateRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/subtask"))
+                .uri(URI.create(BASE_URL + SUBTASKS_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(subtask1)))
                 .build();
         client.send(subtaskCreateRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest deleteTaskRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/task/" + "?id=1"))
+                .uri(URI.create(BASE_URL + TASKS_PATH + ID_PARAMETER + 1))
                 .DELETE()
                 .build();
         client.send(deleteTaskRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest deleteSubtaskRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/subtask/" + "?id=3"))
+                .uri(URI.create(BASE_URL + SUBTASKS_PATH + ID_PARAMETER + 3))
                 .DELETE()
                 .build();
         client.send(deleteSubtaskRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest deleteEpicRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/epic/" + "?id=2"))
+                .uri(URI.create(BASE_URL + EPICS_PATH + ID_PARAMETER + 2))
                 .DELETE()
                 .build();
         client.send(deleteEpicRequest, HttpResponse.BodyHandlers.ofString());
@@ -208,17 +210,17 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
 
         HttpRequest getTasksRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/task"))
+                .uri(URI.create(BASE_URL + TASKS_PATH))
                 .GET()
                 .build();
         HttpRequest getEpicsRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/epic"))
+                .uri(URI.create(BASE_URL + EPICS_PATH))
                 .GET()
                 .build();
         HttpRequest getSubtasksRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/subtask"))
+                .uri(URI.create(BASE_URL + SUBTASKS_PATH))
                 .GET()
                 .build();
 
@@ -248,28 +250,28 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
 
         HttpRequest taskCreateRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/task"))
+                .uri(URI.create(BASE_URL + TASKS_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(task1)))
                 .build();
         client.send(taskCreateRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest epicCreateRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/epic"))
+                .uri(URI.create(BASE_URL + EPICS_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(epic1)))
                 .build();
         client.send(epicCreateRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest subtaskCreateRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/subtask"))
+                .uri(URI.create(BASE_URL + SUBTASKS_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(subtask1)))
                 .build();
         client.send(subtaskCreateRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest updateTaskRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/task"))
+                .uri(URI.create(BASE_URL + TASKS_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(newTask1)))
                 .build();
         client.send(updateTaskRequest, HttpResponse.BodyHandlers.ofString());
@@ -277,24 +279,24 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
         Epic newEpic = getNewEpic(newSubtask1);
         HttpRequest updateEpicRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/epic"))
+                .uri(URI.create(BASE_URL + EPICS_PATH))
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(newEpic)))
                 .build();
         client.send(updateEpicRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest getTasksRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/task"))
+                .uri(URI.create(BASE_URL + TASKS_PATH))
                 .GET()
                 .build();
         HttpRequest getEpicsRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/epic"))
+                .uri(URI.create(BASE_URL + EPICS_PATH))
                 .GET()
                 .build();
         HttpRequest getSubtasksRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/subtask"))
+                .uri(URI.create(BASE_URL + SUBTASKS_PATH))
                 .GET()
                 .build();
 
@@ -328,21 +330,21 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
         normalFilling();
         HttpRequest deleteTaskRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/task"))
+                .uri(URI.create(BASE_URL + TASKS_PATH))
                 .DELETE()
                 .build();
         client.send(deleteTaskRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest deleteSubtaskRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/subtask"))
+                .uri(URI.create(BASE_URL + SUBTASKS_PATH))
                 .DELETE()
                 .build();
         client.send(deleteSubtaskRequest, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest deleteEpicRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/epic"))
+                .uri(URI.create(BASE_URL + EPICS_PATH))
                 .DELETE()
                 .build();
         client.send(deleteEpicRequest, HttpResponse.BodyHandlers.ofString());
@@ -350,17 +352,17 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
 
         HttpRequest getTasksRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/task"))
+                .uri(URI.create(BASE_URL + TASKS_PATH))
                 .GET()
                 .build();
         HttpRequest getEpicsRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/epic"))
+                .uri(URI.create(BASE_URL + EPICS_PATH))
                 .GET()
                 .build();
         HttpRequest getSubtasksRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/subtask"))
+                .uri(URI.create(BASE_URL + SUBTASKS_PATH))
                 .GET()
                 .build();
 
@@ -393,7 +395,7 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
         manager.getEpicOrNull(2);
         HttpRequest getHistoryRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/history"))
+                .uri(URI.create(BASE_URL + TASKS_HISTORY_PATH))
                 .GET()
                 .build();
         List<Task> historyResponse = gson.fromJson(
@@ -414,7 +416,7 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
         normalFilling();
         HttpRequest getPriorityRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks"))
+                .uri(URI.create(BASE_URL + PRIORITY_TASKS_PATH))
                 .GET()
                 .build();
         List<Task> historyResponse = gson.fromJson(
@@ -435,7 +437,7 @@ class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager>{
         normalFilling();
         HttpRequest getSubtasksRequest = HttpRequest
                 .newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/subtask/epic/?id=2"))
+                .uri(URI.create(BASE_URL + SUBTASKS_OF_EPIC_PATH + ID_PARAMETER + 2))
                 .GET()
                 .build();
         List<Subtask> subtasksResponse = gson.fromJson(

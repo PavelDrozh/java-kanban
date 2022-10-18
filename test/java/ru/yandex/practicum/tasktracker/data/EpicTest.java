@@ -26,8 +26,8 @@ class EpicTest {
         assertEquals(real,expected);
     }
 
-    private void addNewSubtask(TaskStatus firstTaskStatus, TaskStatus secondTaskStatus, TaskStatus thirdTaskStatus,
-                               TaskStatus expected) {
+    private void addNewSubtaskAndCheckWithExpectedStatus(TaskStatus firstTaskStatus, TaskStatus secondTaskStatus,
+                                                         TaskStatus thirdTaskStatus, TaskStatus expected) {
         epic.addSubtask(new Subtask(2, "sub1", "discr1", firstTaskStatus.getId(), epic.getId(),
                 LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15)));
         epic.addSubtask(new Subtask(3, "sub2", "discr2", secondTaskStatus.getId(), epic.getId(),
@@ -40,21 +40,23 @@ class EpicTest {
 
     @Test
     void mustReturnNewWhenAllSubsNew() {
-        addNewSubtask(TaskStatus.NEW, TaskStatus.NEW, TaskStatus.NEW, TaskStatus.NEW);
+        addNewSubtaskAndCheckWithExpectedStatus(TaskStatus.NEW, TaskStatus.NEW, TaskStatus.NEW, TaskStatus.NEW);
     }
 
     @Test
     void mustReturnInProgressWhenAllSubsNewOrDone() {
-        addNewSubtask(TaskStatus.DONE, TaskStatus.DONE, TaskStatus.NEW, TaskStatus.IN_PROGRESS);
+        addNewSubtaskAndCheckWithExpectedStatus(TaskStatus.DONE, TaskStatus.DONE, TaskStatus.NEW,
+                TaskStatus.IN_PROGRESS);
     }
 
     @Test
     void mustReturnInProgressWhenAllSubsInProgress() {
-        addNewSubtask(TaskStatus.IN_PROGRESS, TaskStatus.IN_PROGRESS, TaskStatus.IN_PROGRESS, TaskStatus.IN_PROGRESS);
+        addNewSubtaskAndCheckWithExpectedStatus(TaskStatus.IN_PROGRESS, TaskStatus.IN_PROGRESS, TaskStatus.IN_PROGRESS,
+                TaskStatus.IN_PROGRESS);
     }
 
     @Test
     void mustReturnDoneWhenAllSubsDone() {
-        addNewSubtask(TaskStatus.DONE, TaskStatus.DONE, TaskStatus.DONE, TaskStatus.DONE);
+        addNewSubtaskAndCheckWithExpectedStatus(TaskStatus.DONE, TaskStatus.DONE, TaskStatus.DONE, TaskStatus.DONE);
     }
 }

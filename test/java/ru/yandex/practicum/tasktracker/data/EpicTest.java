@@ -26,44 +26,35 @@ class EpicTest {
         assertEquals(real,expected);
     }
 
+    private void addNewSubtask(TaskStatus firstTaskStatus, TaskStatus secondTaskStatus, TaskStatus thirdTaskStatus,
+                               TaskStatus expected) {
+        epic.addSubtask(new Subtask(2, "sub1", "discr1", firstTaskStatus.getId(), epic.getId(),
+                LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15)));
+        epic.addSubtask(new Subtask(3, "sub2", "discr2", secondTaskStatus.getId(), epic.getId(),
+                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(15)));
+        epic.addSubtask(new Subtask(4, "sub3", "discr3", thirdTaskStatus.getId(), epic.getId(),
+                LocalDateTime.of(2022, 10, 3, 15, 52), Duration.ofMinutes(15)));
+        TaskStatus real = epic.getStatus();
+        assertEquals(expected,real);
+    }
+
     @Test
     void mustReturnNewWhenAllSubsNew() {
-        addNewSubtask(TaskStatus.NEW.getId(), TaskStatus.NEW.getId(), TaskStatus.NEW.getId());
-        TaskStatus real = epic.getStatus();
-        TaskStatus expected = TaskStatus.NEW;
-        assertEquals(expected,real);
+        addNewSubtask(TaskStatus.NEW, TaskStatus.NEW, TaskStatus.NEW, TaskStatus.NEW);
     }
 
     @Test
     void mustReturnInProgressWhenAllSubsNewOrDone() {
-        addNewSubtask(TaskStatus.DONE.getId(), TaskStatus.DONE.getId(), TaskStatus.NEW.getId());
-        TaskStatus real = epic.getStatus();
-        TaskStatus expected = TaskStatus.IN_PROGRESS;
-        assertEquals(expected,real);
+        addNewSubtask(TaskStatus.DONE, TaskStatus.DONE, TaskStatus.NEW, TaskStatus.IN_PROGRESS);
     }
 
     @Test
     void mustReturnInProgressWhenAllSubsInProgress() {
-        addNewSubtask(TaskStatus.IN_PROGRESS.getId(), TaskStatus.IN_PROGRESS.getId(), TaskStatus.IN_PROGRESS.getId());
-        TaskStatus real = epic.getStatus();
-        TaskStatus expected = TaskStatus.IN_PROGRESS;
-        assertEquals(expected,real);
+        addNewSubtask(TaskStatus.IN_PROGRESS, TaskStatus.IN_PROGRESS, TaskStatus.IN_PROGRESS, TaskStatus.IN_PROGRESS);
     }
 
     @Test
     void mustReturnDoneWhenAllSubsDone() {
-        addNewSubtask(TaskStatus.DONE.getId(), TaskStatus.DONE.getId(), TaskStatus.DONE.getId());
-        TaskStatus real = epic.getStatus();
-        TaskStatus expected = TaskStatus.DONE;
-        assertEquals(expected,real);
-    }
-
-    private void addNewSubtask(int firstTaskStatus, int secondTaskStatus, int thirdTaskStatus) {
-        epic.addSubtask(new Subtask(2, "sub1", "discr1", firstTaskStatus, epic.getId(),
-                LocalDateTime.of(2022, 10, 1, 15, 52), Duration.ofMinutes(15)));
-        epic.addSubtask(new Subtask(3, "sub2", "discr2", secondTaskStatus, epic.getId(),
-                LocalDateTime.of(2022, 10, 2, 15, 52), Duration.ofMinutes(15)));
-        epic.addSubtask(new Subtask(4, "sub3", "discr3", thirdTaskStatus, epic.getId(),
-                LocalDateTime.of(2022, 10, 3, 15, 52), Duration.ofMinutes(15)));
+        addNewSubtask(TaskStatus.DONE, TaskStatus.DONE, TaskStatus.DONE, TaskStatus.DONE);
     }
 }
